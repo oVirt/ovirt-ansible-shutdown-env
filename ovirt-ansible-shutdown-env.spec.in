@@ -1,0 +1,54 @@
+%global rolename shutdown-env
+%global roleprefix oVirt.
+%global roleprefix_legacy ovirt-
+%global ansible_roles_dir ansible/roles
+
+Name: @PACKAGE_NAME@
+Summary: Ansible role to perform a clean shutdown of all the entities (vms, hosts) in an oVirt environment
+Version: @RPM_VERSION@
+Release: @RPM_RELEASE@%{?release_suffix}%{?dist}
+Source0: http://resources.ovirt.org/pub/src/@PACKAGE_NAME@/@PACKAGE_NAME@-@PACKAGE_VERSION@.tar.gz
+License: ASL 2.0
+Group:          Virtualization/Management
+BuildArch:      noarch
+Url:            http://www.ovirt.org
+
+Requires: ansible >= 2.6
+
+%description
+This Ansible role provide funtionality to perform a clean and ordered shutdown of all the entities (vms, hosts)
+in an oVirt environment using oVirt engine API.
+
+%pretrans -p <lua>
+-- Remove the legacy directory before installing the symlink. This is known issue in RPM:
+-- https://fedoraproject.org/wiki/Packaging:Directory_Replacement
+path = "%{_datadir}/%{ansible_roles_dir}/%{roleprefix_legacy}%{rolename}"
+st = posix.stat(path)
+if st and st.type == "directory" then
+  os.execute('rm -rf "'..path..'"')
+end
+
+%prep
+%setup -c -q
+
+%build
+
+%install
+export PKG_DATA_DIR_ORIG=%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{rolename}
+export PKG_DATA_DIR=%{buildroot}$PKG_DATA_DIR_ORIG
+export PKG_DOC_DIR=%{buildroot}%{_pkgdocdir}
+export ROLENAME_LEGACY=%{buildroot}%{_datadir}/%{ansible_roles_dir}/%{roleprefix_legacy}%{rolename}
+sh build.sh install
+
+%files
+%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{rolename}
+%{_datadir}/%{ansible_roles_dir}/%{roleprefix_legacy}%{rolename}
+
+%doc README.md
+%doc examples/
+
+%license LICENSE
+
+%changelog
+* Wed Jul 25 2018 Simone Tiraboschi <stirabos@redhat.com> - 1.0.0-1
+- Initial release
