@@ -91,6 +91,17 @@
       command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ gmaintenance_mode_cmd }}'
       with_items:
         - "{{ he_hosts }}"
+      ignore_errors: True
+      register: globalmm
+
+    - set_fact:
+        globalmm_set: "{{ globalmm.results | rejectattr('failed') | list | length }}"
+
+    - name: Enforce global maintenance mode
+      fail:
+        msg: >
+          Failed setting global maintenance mode.
+      when: globalmm_set|int == 0
 
     - name: Shutdown of HE hosts
       command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ he_shutdown_cmd }}'
