@@ -5,6 +5,9 @@ The `oVirt.shutdown-env` role iterates through all the entities (vms and hosts) 
 It also handles an Hosted-Engine and hyper-converged GlusterFS environment as a special case automatically detecting it.
 The role is intended to be run only against the engine machine.
 
+If on an Hosted-Engine environment, global maintenance mode will be set:
+the user has to manually exit it in order to get the engine VM automatically powered up once needed. 
+
 Requirements
 ------------
 

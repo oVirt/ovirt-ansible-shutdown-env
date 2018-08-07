@@ -101,7 +101,13 @@
       fail:
         msg: >
           Failed setting global maintenance mode.
-      when: globalmm_set|int == 0
+      when: globalmm_set|int == 0 and he_hosts|length > 0
+
+    - name: Warn about HE global maintenace mode
+      debug:
+        msg: >
+          HE global maintenance mode has been set; you have to exit it to get the engine VM started when needed
+      when: globalmm_set|int > 0
 
     - name: Shutdown of HE hosts
       command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ he_shutdown_cmd }}'
