@@ -13,7 +13,6 @@ DOC_DIR=$DATAROOT_DIR/doc
 PKG_DATA_DIR=${PKG_DATA_DIR:-$ROLES_DATAROOT_DIR/$PACKAGE_NAME}
 PKG_DATA_DIR_ORIG=${PKG_DATA_DIR_ORIG:-$PKG_DATA_DIR}
 PKG_DOC_DIR=${PKG_DOC_DIR:-$DOC_DIR/$PACKAGE_NAME}
-ROLENAME_LEGACY="${ROLENAME_LEGACY:-$ROLES_DATAROOT_DIR/ovirt-shutdown-env}"
 
 RPM_VERSION=$VERSION
 PACKAGE_VERSION=$VERSION
@@ -40,9 +39,6 @@ install() {
   mkdir -p $PKG_DATA_DIR
   mkdir -p $PKG_DOC_DIR
 
-  # Create a symlink, so legacy role name does work:
-  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY 
-  
   cp -pR defaults/ $PKG_DATA_DIR
   cp -pR library/ $PKG_DATA_DIR
   cp -pR tasks/ $PKG_DATA_DIR
