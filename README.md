@@ -1,1 +1,45 @@
-# ovirt-ansible-shutdown-env
+oVirt environment shutdown
+=========
+
+The `oVirt.shutdown-env` role iterates through all the entities (vms and hosts) in an oVirt/RHV cluster and performs a clean and ordered shutdown.
+It also handles an Hosted-Engine and hyper-converged GlusterFS environment as a special case automatically detecting it.
+The role is intended to be run only against the engine machine.
+
+If on an Hosted-Engine environment, global maintenance mode will be set:
+the user has to manually exit it in order to get the engine VM automatically powered up once needed. 
+
+Requirements
+------------
+
+ * Ansible version 2.6 or higher
+ * Python SDK version 4.2 or higher
+
+Dependencies
+------------
+
+No.
+
+Example Playbook
+----------------
+
+```yaml
+---
+- name: oVirt shutdown environment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    engine_url: https://ovirt-engine.example.com/ovirt-engine/api
+    engine_user: admin@internal
+    engine_password: 123456
+    engine_cafile: /etc/pki/ovirt-engine/ca.pem
+
+  roles:
+    - oVirt.shutdown-env
+```
+
+License
+-------
+
+Apache License 2.0
