@@ -86,6 +86,7 @@
       poll: 0
       with_items:
         - "{{ non_he_hosts_noipmi }}"
+      ignore_errors: True
 
     - name: Set global maintenance mode
       command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ gmaintenance_mode_cmd }}'
