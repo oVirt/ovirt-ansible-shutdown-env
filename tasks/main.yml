@@ -37,6 +37,13 @@
         all_content: true
 
     - set_fact:
+        startup: false
+
+    - set_fact:
+        startup: true
+      tags: [ 'never', 'startup' ]
+
+    - set_fact:
         he_hosts: "{{ ovirt_hosts | selectattr('hosted_engine', 'defined') | selectattr('hosted_engine.configured') | list }}"
 
     - set_fact:
@@ -49,78 +56,113 @@
         non_he_hosts_noipmi: "{{ non_he_hosts | difference(non_he_hosts_ipmi) }}"
 
     - set_fact:
+        hosts_ipmi: "{{ ovirt_hosts | selectattr('power_management', 'defined') | selectattr('power_management.enabled') | list }}"
+
+    - set_fact:
         he_shutdown_cmd: >-
           while hosted-engine --vm-status | grep "\"vm\": \"up\"" >/dev/null; do sleep 5; done; shutdown -h now
         non_he_noipmi_shutdown_cmd: >-
           while pgrep qemu-kvm >/dev/null; do sleep 5; done; shutdown -h now
         gmaintenance_mode_cmd: >-
           hosted-engine --set-maintenance --mode=global
+        ugmaintenance_mode_cmd: >-
+          hosted-engine --set-maintenance --mode=none
 
     - name: Get VM list
       ovirt_vms_facts:
         auth: "{{ ovirt_auth }}"
         all_content: true
 
-    - name: Shutdown all VMs, except HostedEngine
-      ovirt_vms:
-        state: stopped
-        name: "{{ item.name }}"
-        auth: "{{ ovirt_auth }}"
-        force: true
-        wait: true
-      when: "item.origin != 'managed_hosted_engine'"
-      with_items:
-        - "{{ ovirt_vms }}"
+    block:
+      - name: Shutdown all VMs, except HostedEngine
+        ovirt_vms:
+          state: stopped
+          name: "{{ item.name }}"
+          auth: "{{ ovirt_auth }}"
+          force: true
+          wait: true
+        when: "item.origin != 'managed_hosted_engine'"
+        with_items:
+          - "{{ ovirt_vms }}"
 
-    - name: Shutdown hosts, except HE ones, via IPMI (if configured)
-      ovirt_hosts:
-        state: stopped
-        name: "{{ item.name }}"
-        auth: "{{ ovirt_auth }}"
-      with_items:
-        - "{{ non_he_hosts_ipmi }}"
+      - name: Shutdown hosts, except HE ones, via IPMI (if configured)
+        ovirt_hosts:
+          state: stopped
+          name: "{{ item.name }}"
+          auth: "{{ ovirt_auth }}"
+        with_items:
+          - "{{ non_he_hosts_ipmi }}"
 
-    - name: Shutdown remaining non HE hosts
-      command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ non_he_noipmi_shutdown_cmd }}'
-      async: 1000
-      poll: 0
-      with_items:
-        - "{{ non_he_hosts_noipmi }}"
-      ignore_errors: True
+      - name: Shutdown remaining non HE hosts
+        command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ non_he_noipmi_shutdown_cmd }}'
+        async: 1000
+        poll: 0
+        with_items:
+          - "{{ non_he_hosts_noipmi }}"
+        ignore_errors: True
 
-    - name: Set global maintenance mode
-      command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ gmaintenance_mode_cmd }}'
-      with_items:
-        - "{{ he_hosts }}"
-      ignore_errors: True
-      register: globalmm
+      - name: Set global maintenance mode
+        command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ gmaintenance_mode_cmd }}'
+        with_items:
+          - "{{ he_hosts }}"
+        ignore_errors: True
+        register: globalmm
 
-    - set_fact:
-        globalmm_set: "{{ globalmm.results | rejectattr('failed') | list | length }}"
+      - set_fact:
+          globalmm_set: "{{ globalmm.results | rejectattr('failed') | list | length }}"
+        when: globalmm is defined and globalmm.results is defined
 
-    - name: Enforce global maintenance mode
-      fail:
-        msg: >
-          Failed setting global maintenance mode.
-      when: globalmm_set|int == 0 and he_hosts|length > 0
+      - name: Enforce global maintenance mode
+        fail:
+          msg: >
+            Failed setting global maintenance mode.
+        when: he_hosts|length > 0 and globalmm_set|int == 0
 
-    - name: Warn about HE global maintenace mode
-      debug:
-        msg: >
-          HE global maintenance mode has been set; you have to exit it to get the engine VM started when needed
-      when: globalmm_set|int > 0
+      - name: Warn about HE global maintenace mode
+        debug:
+          msg: >
+            HE global maintenance mode has been set; you have to exit it to get the engine VM started when needed
+        when: globalmm_set|int > 0
 
-    - name: Shutdown of HE hosts
-      command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ he_shutdown_cmd }}'
-      async: 1000
-      poll: 0
-      with_items:
-        - "{{ he_hosts }}"
+      - name: Shutdown of HE hosts
+        command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ he_shutdown_cmd }}'
+        async: 1000
+        poll: 0
+        with_items:
+          - "{{ he_hosts }}"
 
-    - name: Shutdown engine host/VM
-      command: shutdown -h now
-      async: 1000
-      poll: 0
+      - name: Shutdown engine host/VM
+        command: shutdown -h now
+        async: 1000
+        poll: 0
+    when: not startup
+
+    block:
+      - name: Power-on IPMI configured hosts
+        ovirt_hosts:
+          state: started
+          name: "{{ item.name }}"
+          auth: "{{ ovirt_auth }}"
+        with_items:
+          - "{{ hosts_ipmi }}"
+
+      - name: Unset global maintenance mode
+        command: ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i /etc/pki/ovirt-engine/keys/engine_id_rsa -p {{item.ssh.port}} -t root@{{item.address}} '{{ ugmaintenance_mode_cmd }}'
+        with_items:
+          - "{{ he_hosts }}"
+        ignore_errors: True
+        register: uglobalmm
+
+      - set_fact:
+          globalmm_set: "{{ uglobalmm.results | rejectattr('failed') | list | length }}"
+        when: uglobalmm is defined and uglobalmm.results is defined
+
+      - name: Enforce no global maintenance mode
+        fail:
+          msg: >
+            Failed unsetting global maintenance mode.
+        when: he_hosts|length > 0 and globalmm_set|int == 0
+    when: startup
 
   always:
     - name: Logout from oVirt
