@@ -79,9 +79,25 @@
           state: stopped
           name: "{{ item.name }}"
           auth: "{{ ovirt_auth }}"
-          force: true
           wait: true
         when: "item.origin != 'managed_hosted_engine'"
+        with_items:
+          - "{{ ovirt_vms }}"
+        ignore_errors: True
+
+      - name: Refresh VM list
+        ovirt_vms_facts:
+          auth: "{{ ovirt_auth }}"
+          all_content: true
+
+      - name: Forcefully shutdown remaining VMs, except HostedEngine
+        ovirt_vms:
+          state: stopped
+          name: "{{ item.name }}"
+          auth: "{{ ovirt_auth }}"
+          wait: true
+          force: true
+        when: "item.origin != 'managed_hosted_engine' and item.status != 'down'"
         with_items:
           - "{{ ovirt_vms }}"
 
