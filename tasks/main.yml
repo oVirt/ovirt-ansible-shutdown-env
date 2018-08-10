@@ -73,7 +73,7 @@
         auth: "{{ ovirt_auth }}"
         all_content: true
 
-    block:
+    - block:
       - name: Shutdown all VMs, except HostedEngine
         ovirt_vms:
           state: stopped
@@ -135,9 +135,10 @@
         command: shutdown -h now
         async: 1000
         poll: 0
-    when: not startup
 
-    block:
+      when: not startup
+
+    - block:
       - name: Power-on IPMI configured hosts
         ovirt_hosts:
           state: started
@@ -162,7 +163,7 @@
           msg: >
             Failed unsetting global maintenance mode.
         when: he_hosts|length > 0 and globalmm_set|int == 0
-    when: startup
+      when: startup
 
   always:
     - name: Logout from oVirt
