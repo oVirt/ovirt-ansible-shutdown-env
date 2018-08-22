@@ -1,4 +1,4 @@
-%global rolename shutdown-env
+%global rolename shutdown_env
 %global roleprefix oVirt.
 %global ansible_roles_dir ansible/roles
 

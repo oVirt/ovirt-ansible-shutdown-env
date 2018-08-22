@@ -13,4 +13,4 @@
     engine_user: admin@internal
 
   roles:
-    - oVirt.shutdown-env
+    - oVirt.shutdown_env

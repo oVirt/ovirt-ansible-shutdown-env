@@ -4,7 +4,7 @@ VERSION="1.0.1"
 MILESTONE=master
 RPM_RELEASE="0.0.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
-ROLE_NAME="oVirt.shutdown-env"
+ROLE_NAME="oVirt.shutdown_env"
 PACKAGE_NAME="ovirt-ansible-shutdown-env"
 PREFIX=/usr/local
 DATAROOT_DIR=$PREFIX/share
