@@ -60,7 +60,7 @@
 
     - set_fact:
         he_shutdown_cmd: >-
-          while hosted-engine --vm-status | grep "\"vm\": \"up\"" >/dev/null; do sleep 5; done; shutdown -h now
+          while hosted-engine --vm-status | grep "\"vm\": \"up\"" >/dev/null; do sleep 5; done; sanlock client shutdown -f 1; shutdown -h now
         non_he_noipmi_shutdown_cmd: >-
           while pgrep qemu-kvm >/dev/null; do sleep 5; done; shutdown -h now
         gmaintenance_mode_cmd: >-
