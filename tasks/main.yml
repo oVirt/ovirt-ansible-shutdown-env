@@ -32,7 +32,7 @@
         - always
 
     - name: Get hosts
-      ovirt_hosts_facts:
+      ovirt_host_facts:
         auth: "{{ ovirt_auth }}"
         all_content: true
 
@@ -44,10 +44,10 @@
       tags: [ 'never', 'startup' ]
 
     - set_fact:
-        he_hosts: "{{ ovirt_hosts | selectattr('hosted_engine', 'defined') | selectattr('hosted_engine.configured') | list }}"
+        he_hosts: "{{ ovirt_host | selectattr('hosted_engine', 'defined') | selectattr('hosted_engine.configured') | list }}"
 
     - set_fact:
-        non_he_hosts: "{{ ovirt_hosts | difference(he_hosts) }}"
+        non_he_hosts: "{{ ovirt_host | difference(he_hosts) }}"
 
     - set_fact:
         non_he_hosts_ipmi: "{{ non_he_hosts | selectattr('power_management', 'defined') | selectattr('power_management.enabled') | list }}"
@@ -56,7 +56,7 @@
         non_he_hosts_noipmi: "{{ non_he_hosts | difference(non_he_hosts_ipmi) }}"
 
     - set_fact:
-        hosts_ipmi: "{{ ovirt_hosts | selectattr('power_management', 'defined') | selectattr('power_management.enabled') | list }}"
+        hosts_ipmi: "{{ ovirt_host | selectattr('power_management', 'defined') | selectattr('power_management.enabled') | list }}"
 
     - set_fact:
         he_shutdown_cmd: >-
@@ -69,29 +69,29 @@
           hosted-engine --set-maintenance --mode=none
 
     - name: Get VM list
-      ovirt_vms_facts:
+      ovirt_vm_facts:
         auth: "{{ ovirt_auth }}"
         all_content: true
 
     - block:
       - name: Shutdown all VMs, except HostedEngine
-        ovirt_vms:
+        ovirt_vm:
           state: stopped
           name: "{{ item.name }}"
           auth: "{{ ovirt_auth }}"
           wait: true
         when: "item.origin != 'managed_hosted_engine'"
         with_items:
-          - "{{ ovirt_vms }}"
+          - "{{ ovirt_vm }}"
         ignore_errors: True
 
       - name: Refresh VM list
-        ovirt_vms_facts:
+        ovirt_vm_facts:
           auth: "{{ ovirt_auth }}"
           all_content: true
 
       - name: Forcefully shutdown remaining VMs, except HostedEngine
-        ovirt_vms:
+        ovirt_vm:
           state: stopped
           name: "{{ item.name }}"
           auth: "{{ ovirt_auth }}"
@@ -99,10 +99,10 @@
           force: true
         when: "item.origin != 'managed_hosted_engine' and item.status != 'down'"
         with_items:
-          - "{{ ovirt_vms }}"
+          - "{{ ovirt_vm }}"
 
       - name: Shutdown hosts, except HE ones, via IPMI (if configured)
-        ovirt_hosts:
+        ovirt_host:
           state: stopped
           name: "{{ item.name }}"
           auth: "{{ ovirt_auth }}"
@@ -156,7 +156,7 @@
 
     - block:
       - name: Power-on IPMI configured hosts
-        ovirt_hosts:
+        ovirt_host:
           state: started
           name: "{{ item.name }}"
           auth: "{{ ovirt_auth }}"
