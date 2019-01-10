@@ -1,6 +1,6 @@
+---
 galaxy_info:
   author: Simone Tiraboschi
-  role_name: shutdown-env
   description: Role to shutdown cleanly all the entities in a oVirt/RHV environment.
   company: Red Hat, Inc.
 

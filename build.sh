@@ -4,7 +4,7 @@ VERSION="1.0.1"
 MILESTONE=master
 RPM_RELEASE="0.0.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
-ROLE_NAME="oVirt.shutdown-env"
+ROLE_NAME="ovirt.shutdown-env"
 PACKAGE_NAME="ovirt-ansible-shutdown-env"
 PREFIX=/usr/local
 DATAROOT_DIR=$PREFIX/share
@@ -13,6 +13,8 @@ DOC_DIR=$DATAROOT_DIR/doc
 PKG_DATA_DIR=${PKG_DATA_DIR:-$ROLES_DATAROOT_DIR/$PACKAGE_NAME}
 PKG_DATA_DIR_ORIG=${PKG_DATA_DIR_ORIG:-$PKG_DATA_DIR}
 PKG_DOC_DIR=${PKG_DOC_DIR:-$DOC_DIR/$PACKAGE_NAME}
+ROLENAME_LEGACY="${ROLENAME_LEGACY:-$ROLES_DATAROOT_DIR/ovirt-shutdown-env}"
+ROLENAME_LEGACY_UPPERCASE="${ROLENAME_LEGACY_UPPERCASE:-$ROLES_DATAROOT_DIR/oVirt.shutdown-env}"
 
 RPM_VERSION=$VERSION
 PACKAGE_VERSION=$VERSION
@@ -38,6 +40,12 @@ install() {
   echo "Installing data..."
   mkdir -p $PKG_DATA_DIR
   mkdir -p $PKG_DOC_DIR
+
+  # Create a symlink, so legacy role name does work:
+  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY
+
+  # Create a symlink, so legacy role name does work with upper case:
+  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY_UPPERCASE
 
   cp -pR defaults/ $PKG_DATA_DIR
   cp -pR library/ $PKG_DATA_DIR
