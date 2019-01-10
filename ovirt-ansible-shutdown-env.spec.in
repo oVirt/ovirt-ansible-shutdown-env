@@ -1,5 +1,5 @@
-%global rolename shutdown-env
-%global roleprefix oVirt.
+%global rolename shutdown_env
+%global roleprefix ovirt.
 %global ansible_roles_dir ansible/roles
 
 Name: @PACKAGE_NAME@
@@ -38,5 +38,8 @@ sh build.sh install
 %license LICENSE
 
 %changelog
+* Thu Jun 10 2019 Simone Tiraboschi <stirabos@redhat.com> - 1.0.2-1
+- Renaming to ovirt.shutdown_env to satisfy galaxy 3.0 naming recommendations
+
 * Wed Jul 25 2018 Simone Tiraboschi <stirabos@redhat.com> - 1.0.0-1
 - Initial release
