@@ -1,5 +1,7 @@
 %global rolename shutdown_env
 %global roleprefix ovirt.
+%global legacy_roleprefix oVirt.
+%global legacy_rolename shutdown-env
 %global ansible_roles_dir ansible/roles
 
 Name: @PACKAGE_NAME@
@@ -12,11 +14,34 @@ Group:          Virtualization/Management
 BuildArch:      noarch
 Url:            http://www.ovirt.org
 
-Requires: ansible >= 2.8
+Requires: ansible >= 2.7
 
 %description
 This Ansible role provide funtionality to perform a clean and ordered shutdown of all the entities (vms, hosts)
 in an oVirt environment using oVirt engine API.
+
+%pretrans -p <lua>
+-- Remove the legacy directory before installing the symlink. This is known issue in RPM:
+-- https://fedoraproject.org/wiki/Packaging:Directory_Replacement
+rolename_legacy_noprefix = "%{_datadir}/%{ansible_roles_dir}/ovirt-%{legacy_rolename}"
+rolename_legacy_dash = "%{_datadir}/%{ansible_roles_dir}/%{roleprefix}%{legacy_rolename}"
+rolename_legacy_uppercase="%{_datadir}/%{ansible_roles_dir}/%{legacy_roleprefix}%{legacy_rolename}"
+
+st1 = posix.stat(rolename_legacy_noprefix)
+if st1 and st1.type == "directory" then
+  os.execute('rm -rf "'..rolename_legacy_noprefix..'"')
+end
+
+st2 = posix.stat(rolename_legacy_dash)
+if st2 and st2.type == "directory" then
+  os.execute('rm -rf "'..rolename_legacy_dash..'"')
+end
+
+st3 = posix.stat(rolename_legacy_uppercase)
+if st3 and st3.type == "directory" then
+  os.execute('rm -rf "'..rolename_legacy_uppercase..'"')
+end
+
 
 %prep
 %setup -c -q
