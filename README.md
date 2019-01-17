@@ -1,7 +1,7 @@
 oVirt environment shutdown
 =========
 
-The `oVirt.shutdown-env` role iterates through all the entities (vms and hosts) in an oVirt/RHV cluster and performs a clean and ordered shutdown.
+The `ovirt.shutdown_env` role iterates through all the entities (vms and hosts) in an oVirt/RHV cluster and performs a clean and ordered shutdown.
 It also handles an Hosted-Engine and hyper-converged GlusterFS environment as a special case automatically detecting it.
 The role is intended to be run only against the engine machine.
 Please note that host shutdown is async and the playbook terminates before HE hosts are really down.
@@ -49,7 +49,7 @@ Example Playbook
     engine_cafile: /etc/pki/ovirt-engine/ca.pem
 
   roles:
-    - oVirt.shutdown-env
+    - ovirt.shutdown_env
 ```
 
 Demo

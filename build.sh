@@ -1,10 +1,10 @@
 #!/bin/bash
 
-VERSION="1.0.1"
+VERSION="1.0.2"
 MILESTONE=master
 RPM_RELEASE="0.0.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
-ROLE_NAME="ovirt.shutdown-env"
+ROLE_NAME="ovirt.shutdown_env"
 PACKAGE_NAME="ovirt-ansible-shutdown-env"
 PREFIX=/usr/local
 DATAROOT_DIR=$PREFIX/share
@@ -13,7 +13,8 @@ DOC_DIR=$DATAROOT_DIR/doc
 PKG_DATA_DIR=${PKG_DATA_DIR:-$ROLES_DATAROOT_DIR/$PACKAGE_NAME}
 PKG_DATA_DIR_ORIG=${PKG_DATA_DIR_ORIG:-$PKG_DATA_DIR}
 PKG_DOC_DIR=${PKG_DOC_DIR:-$DOC_DIR/$PACKAGE_NAME}
-ROLENAME_LEGACY="${ROLENAME_LEGACY:-$ROLES_DATAROOT_DIR/ovirt-shutdown-env}"
+ROLENAME_LEGACY_NOPREFIX="${ROLENAME_LEGACY:-$ROLES_DATAROOT_DIR/ovirt-shutdown-env}"
+ROLENAME_LEGACY_DASH="${ROLENAME_LEGACY:-$ROLES_DATAROOT_DIR/ovirt.shutdown-env}"
 ROLENAME_LEGACY_UPPERCASE="${ROLENAME_LEGACY_UPPERCASE:-$ROLES_DATAROOT_DIR/oVirt.shutdown-env}"
 
 RPM_VERSION=$VERSION
@@ -30,9 +31,9 @@ dist() {
    -e "s|@RPM_RELEASE@|$RPM_RELEASE|g" \
    -e "s|@PACKAGE_NAME@|$PACKAGE_NAME|g" \
    -e "s|@PACKAGE_VERSION@|$PACKAGE_VERSION|g" \
-   < ovirt-ansible-shutdown-env.spec.in > ovirt-ansible-shutdown-env.spec
+   < $PACKAGE_NAME.spec.in > $PACKAGE_NAME.spec
 
-  git ls-files | tar --files-from /proc/self/fd/0 -czf "$TARBALL" ovirt-ansible-shutdown-env.spec
+  git ls-files | tar --files-from /proc/self/fd/0 -czf "$TARBALL" $PACKAGE_NAME.spec
   echo "tar archive '$TARBALL' created."
 }
 
@@ -41,10 +42,9 @@ install() {
   mkdir -p $PKG_DATA_DIR
   mkdir -p $PKG_DOC_DIR
 
-  # Create a symlink, so legacy role name does work:
-  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY
-
-  # Create a symlink, so legacy role name does work with upper case:
+  # Create symlinks for backward compatibility with legacy role names:
+  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY_NOPREFIX
+  ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY_DASH
   ln -f -s $PKG_DATA_DIR_ORIG $ROLENAME_LEGACY_UPPERCASE
 
   cp -pR defaults/ $PKG_DATA_DIR
