@@ -55,7 +55,7 @@ Example Playbook
 Demo
 ----
  Here a demo showing a clean and ordered shutdown of an hyper-converged hosted-engine environment with 3 hosts, 3 regular VMs plus the HE one.
-[![asciicast](https://asciinema.org/a/vZJ6xFEU1POYyS8mEKF9lcV63.png)](https://asciinema.org/a/vZJ6xFEU1POYyS8mEKF9lcV63)
+[![asciicast](https://asciinema.org/a/261501.svg)](https://asciinema.org/a/261501)
 
 License
 -------
