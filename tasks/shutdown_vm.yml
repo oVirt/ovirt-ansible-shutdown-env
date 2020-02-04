@@ -1,0 +1,24 @@
+---
+- name: Shutdown VMs in batches
+  ovirt_vm:
+    state: stopped
+    name: "{{ batch_vm.name }}"
+    auth: "{{ ovirt_auth }}"
+    wait: true
+  when: "batch_vm.origin != 'managed_hosted_engine'"
+  loop_control:
+    loop_var: "batch_vm"
+  ignore_errors: true
+  poll: 0
+  async: "{{ vm_shutdown_timeout }}"
+  register: shutdown_vm
+  with_items: "{{ vm_list }}"
+
+- name: Wait for the shutdown of VMs
+  async_status: "jid={{ item.ansible_job_id }}"
+  register: job_result
+  with_items: "{{ shutdown_vm.results }}"
+  until: job_result.finished
+  retries: "{{ vm_shutdown_timeout // vm_shutdown_poll_interval }}"
+  delay: "{{ vm_shutdown_poll_interval }}"
+  ignore_errors: true

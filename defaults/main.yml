@@ -1,3 +1,6 @@
 ---
 host_names:
   - '*'
+vm_shutdown_timeout: 300
+vm_shutdown_poll_interval: 15
+vm_shutdown_batch_count: 10

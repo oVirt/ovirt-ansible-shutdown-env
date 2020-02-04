@@ -92,15 +92,11 @@
 
     - block:
         - name: Shutdown all VMs, except HostedEngine
-          ovirt_vm:
-            state: stopped
-            name: "{{ item.name }}"
-            auth: "{{ ovirt_auth }}"
-            wait: true
-          when: "item.origin != 'managed_hosted_engine'"
+          include_tasks: shutdown_vm.yml
+          vars:
+            vm_list: "{{ item }}"
           with_items:
-            - "{{ ovirt_vms }}"
-          ignore_errors: true
+            - "{{ ovirt_vms | batch(vm_shutdown_batch_count) | list }}"
 
         - name: Refresh VM list
           ovirt_vm_facts:
