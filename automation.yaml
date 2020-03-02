@@ -3,4 +3,5 @@ distros:
   - el7
   - el8
 release_branches:
-  master: [ "ovirt-master", "ovirt-4.3" ]
+  ovirt-ansible-shutdown-env-1.0: ovirt-4.3
+
