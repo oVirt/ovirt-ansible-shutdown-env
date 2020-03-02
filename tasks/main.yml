@@ -86,7 +86,7 @@
           hosted-engine --set-maintenance --mode=none
 
     - name: Get VM list
-      ovirt_vm_facts:
+      ovirt_vm_info:
         auth: "{{ ovirt_auth }}"
         all_content: true
 
@@ -103,7 +103,7 @@
           ignore_errors: true
 
         - name: Refresh VM list
-          ovirt_vm_facts:
+          ovirt_vm_info:
             auth: "{{ ovirt_auth }}"
             all_content: true
 

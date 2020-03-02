@@ -24,7 +24,7 @@ Possible improvements are tracked here: https://bugzilla.redhat.com/1609029
 Requirements
 ------------
 
- * Ansible version 2.6 or higher
+ * Ansible version 2.9 or higher
  * Python SDK version 4.2 or higher
 
 Dependencies
