@@ -1,8 +1,8 @@
 #!/bin/bash
 
-VERSION="1.0.4"
-MILESTONE=
-RPM_RELEASE="1"
+VERSION="1.0.5"
+MILESTONE=master
+RPM_RELEASE="0.0.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
 ROLE_NAME="ovirt.shutdown_env"
 PACKAGE_NAME="ovirt-ansible-shutdown-env"
