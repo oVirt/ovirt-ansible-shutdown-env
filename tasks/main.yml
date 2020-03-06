@@ -86,9 +86,10 @@
           hosted-engine --set-maintenance --mode=none
 
     - name: Get VM list
-      ovirt_vm_facts:
+      ovirt_vm_info:
         auth: "{{ ovirt_auth }}"
         all_content: true
+      register: vm_result
 
     - block:
         - name: Shutdown all VMs, except HostedEngine
@@ -99,13 +100,14 @@
             wait: true
           when: "item.origin != 'managed_hosted_engine'"
           with_items:
-            - "{{ ovirt_vms }}"
+            - "{{ vm_result.ovirt_vms }}"
           ignore_errors: true
 
         - name: Refresh VM list
-          ovirt_vm_facts:
+          ovirt_vm_info:
             auth: "{{ ovirt_auth }}"
             all_content: true
+          register: vm_result
 
         - name: Forcefully shutdown remaining VMs, except HostedEngine
           ovirt_vm:
@@ -116,7 +118,7 @@
             force: true
           when: "item.origin != 'managed_hosted_engine' and item.status != 'down'"
           with_items:
-            - "{{ ovirt_vms }}"
+            - "{{ vm_result.ovirt_vms }}"
 
         - name: Shutdown hosts, except HE ones, via IPMI (if configured)
           ovirt_host:
