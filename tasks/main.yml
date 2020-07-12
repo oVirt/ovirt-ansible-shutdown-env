@@ -32,9 +32,10 @@
         - always
 
     - name: Get hosts
-      ovirt_host_facts:
+      ovirt_host_info:
         auth: "{{ ovirt_auth }}"
         all_content: true
+      register: hosts_result
 
     - name: Set a variable
       set_fact:
@@ -48,12 +49,12 @@
     - name: Define a query for HE hosts
       set_fact:
         he_hosts: >-
-          {{ ovirt_hosts | selectattr('hosted_engine', 'defined') | selectattr('hosted_engine.configured') | list }}
+          {{ hosts_result.ovirt_hosts | selectattr('hosted_engine', 'defined') | selectattr('hosted_engine.configured') | list }}
 
     - name: Define a query for non HE hosts
       set_fact:
         non_he_hosts: >-
-          {{ ovirt_hosts | difference(he_hosts) }}
+          {{ hosts_result.ovirt_hosts | difference(he_hosts) }}
 
     - name: Define a query for non HE hosts with power management
       set_fact:
@@ -68,7 +69,7 @@
     - name: Define a query for hosts with power management
       set_fact:
         hosts_ipmi: >-
-          {{ ovirt_hosts | selectattr('power_management', 'defined') | selectattr('power_management.enabled') | list }}
+          {{ hosts_result.ovirt_hosts | selectattr('power_management', 'defined') | selectattr('power_management.enabled') | list }}
 
     - name: Define commands
       set_fact:
