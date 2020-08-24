@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.1.0"
+VERSION="1.1.1"
 MILESTONE=master
 RPM_RELEASE="0.0.$MILESTONE.$(date -u +%Y%m%d%H%M%S)"
 
